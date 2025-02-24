@@ -6,5 +6,6 @@ def area(a):
 def perimeter(a):
     return 4 * a
 
-def halfperimeter(a):
-    return 2 * a
+
+def perimeter(a):
+    return 4 * a
