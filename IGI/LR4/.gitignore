@@ -1,0 +1,10 @@
+*.sln
+x64/
+.vs/
+*.filters
+*.user
+*.bin
+*.vcxproj
+packages/
+Test/
+*.vsidx
