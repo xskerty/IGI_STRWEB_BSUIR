@@ -40,7 +40,7 @@ class Task1(ITask):
             
             export_method = input_with_validating(
                 lambda msg: msg.lower().strip() in self._export_methods,
-                'Выберите формат файла (pickle, csv): '
+                'Choose format (pickle, csv): '
             ).lower().strip()
             
             self._export_methods[export_method].load(
@@ -48,23 +48,23 @@ class Task1(ITask):
                 f'{self._filepath}.{export_method}'
             )
 
-            print(f"\nСписок чисел:")
+            print(f"\nNumbers:")
             for key, num in self._repo.numbers.items():
-                print(f"{key}: {num.to_str()}")
+                print(f"{key}: {str(num)}")
             
             duplicates = self._repo.find_duplicates()
             if duplicates:
-                print(f"\nРавные числа: ")
+                print(f"\nEqual numbers: ")
                 for key, num in duplicates.items():
                     print(f"{key}: {num}")
             else:
-                print("Равных чисел нет")
+                print("No equals numbers")
                 
             max_element = self._repo.find_max_number()
-            print(f"\nМаксимальное число: {max_element.to_str()}")
+            print(f"\nMax number: {str(max_element)}")
             
             print(self._service.find_number_info(), sep='\n')
                
         except Exception as e:
-            print(f"Ошибка: {e}")
+            print(f"Error: {e}")
             

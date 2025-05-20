@@ -13,20 +13,20 @@ class RationalNumberService:
 
     def find_number_info(self) -> List[str]:
         try:
-            key = input('Введите ключ числа: ').strip()
+            key = input('Enter number key: ').strip()
         
             if key not in self._repo.numbers:
-                return [f"Число с ключом '{key}' не найдено"]
+                return [f"Number with key '{key}' don't exist"]
         
             num = self._repo.numbers[key]
             return [
-                f"Ключ: {key}",
-                f"Число: {num.numerator}/{num.denominator}",
-                f"Десятичное значение: {num.to_float():.4f}",
+                f"Key: {key}",
+                f"Number: {num.to_json()}",
+                f"Decimal Value: {float(num):.4f}",
         ]
         
         except Exception as e:
-            raise ValueError(f"Ошибка: {e}")
+            raise ValueError(f"Error: {e}")
 
     def get_all_numbers(self) -> List[RationalNumber]:
         return self._repo.numbers.copy()

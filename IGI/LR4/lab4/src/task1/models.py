@@ -1,11 +1,13 @@
 from math import gcd
 from typing import List, Optional
+import json
 
-class RationalNumber:
-    """
-    Represents a rational number as a numerator/denominator pair.
-    Automatically reduces fractions to simplest form and handles comparisons.
-    """
+class JsonSerializationMixin:
+    def to_json(self):
+        return json.dumps(self.__dict__) 
+
+class RationalNumber(JsonSerializationMixin):
+
     def __init__(self, numerator: int, denominator: int = 1):
         if denominator == 0:
             raise ValueError("Denominator cannot be zero")
@@ -15,27 +17,23 @@ class RationalNumber:
     
     @property
     def numerator(self) -> int:
-        """Returns the numerator of the rational number"""
         return self._numerator
     
     @property
     def denominator(self) -> int:
-        """Returns the denominator of the rational number"""
+
         return self._denominator
     
-    def to_float(self) -> float:
-        """Returns the float value of the rational number"""
+    def __float__(self) -> float:
+
         return self._numerator / self._denominator
     
-    def to_str(self) -> str:
+    def __str__(self) -> str:
         return f"{self._numerator}/{self._denominator}"
 
 
 class RationalNumberRepository:
-    """
-    In-memory repository for storing and managing RationalNumber instances.
-    Now stores numbers as a simple list without categories.
-    """
+
     def __init__(self):
         self._numbers: dict[str, list[RationalNumber]] = {}
     
@@ -57,7 +55,7 @@ class RationalNumberRepository:
         value_map = {}
     
         for key, num in self._numbers.items():
-            value = round(num.to_float(), 10)
+            value = round(float(num), 10)
         
             if value not in value_map:
                 value_map[value] = []

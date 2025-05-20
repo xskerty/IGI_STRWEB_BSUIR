@@ -2,44 +2,38 @@ import numpy
 
 
 class MatrixProcessor(object):
-    """
-    Class for generating and performing operations on matrices:
-    - Generates a matrix of random integers.
-    - Normalizes the matrix elements by its maximum absolute value.
-    - Computes the variance of matrix elements using two methods.
-    """
 
     def __init__(self, rows: int, cols: int):
-        """
-        Initializes the MatrixProcessor by generating a random matrix with given dimensions.
-
-        :param rows: Number of rows in the matrix.
-        :param cols: Number of columns in the matrix.
-        """
 
         self.matrix = numpy.random.randint(-100, 100, size=(rows, cols))
 
-    def normalize_by_max_abs(self) -> numpy.ndarray:
-        """
-        Normalizes the matrix by dividing all elements by the maximum absolute value.
+    def process_matrix(self) -> numpy.ndarray:
 
-        :return: A new normalized matrix.
-        """
-        max_abs_elem = numpy.max(numpy.abs(self.matrix))
+        matrix = self.matrix.copy()  
+    
+        for i in range(matrix.shape[0]):
+            if i >= matrix.shape[1]:  
+                continue
+            
+            max_in_row_idx = numpy.argmax(numpy.abs(matrix[i]))
+        
+            matrix[i, i], matrix[i, max_in_row_idx] = matrix[i, max_in_row_idx], matrix[i, i]
+    
+        return matrix
 
-        return self.matrix / max_abs_elem
-
-    def compute_variance(self) -> tuple[numpy.floating, float]:
-        """
-        Computes the variance of the matrix using two methods:
-        1. Built-in numpy function.
-        2. Manual formula for variance computation.
-
-        :return: Tuple with two variance values: (numpy function result, manual formula result).
-        """
-        variance_std_func = numpy.var(self.matrix)
-
-        mean_value = numpy.mean(self.matrix)
-        variance_formula = numpy.sum((self.matrix - mean_value) ** 2) / self.matrix.size
-
-        return variance_std_func, variance_formula
+    def compute_median(self) -> tuple[numpy.floating, float]:
+    
+        median_np = numpy.median(self.matrix)
+    
+        flattened = self.matrix.flatten()
+        sorted_values = numpy.sort(flattened)
+        n = len(sorted_values)
+    
+        if n % 2 == 1:
+        
+            median_manual = sorted_values[n // 2]
+        else:
+        
+            median_manual = (sorted_values[n // 2 - 1] + sorted_values[n // 2]) / 2
+    
+        return median_np, float(median_manual)

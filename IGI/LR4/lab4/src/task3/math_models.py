@@ -41,34 +41,34 @@ class TaylorSeries:
                 f'Stdev: {self.stdev()}')
 
 
-class TaylorSeriesLogarithm(TaylorSeries):
+class TaylorSeriesExp(TaylorSeries):
 
     def __init__(self, epsilon: float, x: float):
         n = self._find_min_n_for_epsilon(epsilon, x)
-        super().__init__(tuple(pow(-1, i - 1) * pow(x, i) / i for i in range(1, n + 1)))
+        super().__init__(tuple(pow(x, i)/math.factorial(i) for i in range(1, n + 1)))
 
     @staticmethod
     def _find_min_n_for_epsilon(epsilon: float, x: float) -> int:
-        math_result = math.log(x + 1)
-        for num_of_members in range(1, 501):
-            result = TaylorSeries(tuple(pow(-1, i - 1) * pow(x, i) / i for i in range(1, num_of_members + 1)))
+        math_result = math.exp(x)
+        for num_of_members in range(0, 51):
+            result = TaylorSeries(tuple(pow(x, i)/math.factorial(i) for i in range(1, num_of_members + 1)))
             if abs(result.sum() - math_result) <= epsilon:
                 return num_of_members
-        return 500
+        return 51
 
 
-class TaylorSeriesLogTable:
+class TaylorSeriesExpTable:
 
     @staticmethod
-    def create_table(log_handler: type[TaylorSeriesLogarithm], eps: float):
+    def create_table(exp_handler: type[TaylorSeriesExp], eps: float):
         table = []
         for x in range(-99, 99, 1):
-            f_x = log_handler(eps, x * 0.01)
+            f_x = exp_handler(eps, x * 0.01)
             table.append({
                 'x': x * 0.01,
                 'n': f_x.n,
                 'fx': f_x.sum(),
-                'math_f': math.log(x * 0.01 + 1),
+                'math_f': math.exp(x * 0.01 + 1),
                 'eps': eps
             })
         return table
