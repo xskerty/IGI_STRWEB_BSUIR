@@ -14,7 +14,7 @@ class TaylorSeries:
         return self._n
 
     def sum(self):
-        return sum(self._series)
+        return 1 + sum(self._series)
 
     def average_value(self):
         return sum(self._series) / self._n
@@ -50,11 +50,11 @@ class TaylorSeriesExp(TaylorSeries):
     @staticmethod
     def _find_min_n_for_epsilon(epsilon: float, x: float) -> int:
         math_result = math.exp(x)
-        for num_of_members in range(0, 51):
+        for num_of_members in range(0, 501):
             result = TaylorSeries(tuple(pow(x, i)/math.factorial(i) for i in range(1, num_of_members + 1)))
             if abs(result.sum() - math_result) <= epsilon:
                 return num_of_members
-        return 51
+        return 501
 
 
 class TaylorSeriesExpTable:
@@ -62,13 +62,13 @@ class TaylorSeriesExpTable:
     @staticmethod
     def create_table(exp_handler: type[TaylorSeriesExp], eps: float):
         table = []
-        for x in range(-99, 99, 1):
-            f_x = exp_handler(eps, x * 0.01)
+        for x in range(-300, 300, 3):
+            f_x = exp_handler(eps, x * 0.1)
             table.append({
-                'x': x * 0.01,
+                'x': x * 0.1,
                 'n': f_x.n,
                 'fx': f_x.sum(),
-                'math_f': math.exp(x * 0.01 + 1),
+                'math_f': math.exp(x * 0.1),
                 'eps': eps
             })
         return table

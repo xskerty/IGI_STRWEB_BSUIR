@@ -22,16 +22,20 @@ class Task1(ITask):
     @repeating_program
     def run(self):
         try:
-            self._repo.add_number("number1", RationalNumber(1, 2))
-            self._repo.add_number("number2", RationalNumber(3, 4))
-            self._repo.add_number("number3", RationalNumber(2, 4))
-            self._repo.add_number("number4", RationalNumber(1, 10))
-            self._repo.add_number("number5", RationalNumber(10, 1))
-            self._repo.add_number("number6", RationalNumber(1, 3))
-            self._repo.add_number("number7", RationalNumber(10, 5))
-            self._repo.add_number("number8", RationalNumber(3, 2))
-            self._repo.add_number("number9", RationalNumber(5, 2))
-            self._repo.add_number("number10", RationalNumber(1, 4))
+
+            rational_numbers = {
+            "number1": RationalNumber(1, 2),
+            "number2": RationalNumber(3, 4),
+            "number3": RationalNumber(2, 4),
+            "number4": RationalNumber(1, 10),
+            "number5": RationalNumber(10, 1),
+            "number6": RationalNumber(1, 3),
+            "number7": RationalNumber(10, 5),
+            "number8": RationalNumber(3, 2),
+            "number9": RationalNumber(5, 2),
+            "number10": RationalNumber(1, 4)}
+            
+            self._repo._numbers = rational_numbers
             
             self._export_methods['csv'].save(self._repo, f'{self._filepath}.csv')
             self._export_methods['pickle'].save(self._repo, f'{self._filepath}.pickle')

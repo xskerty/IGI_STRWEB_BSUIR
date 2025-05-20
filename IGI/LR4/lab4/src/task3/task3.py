@@ -26,13 +26,12 @@ class Task3(ITask):
             print(series)
 
             self._table = self._table_manager.create_table(self._exp_handler, eps)
-            self._plot_ln()
+            self._plot_exp()
             self._plot_n()
         except Exception as e:
             print(e)
 
-    def _plot_ln(self):
-        """Plots the graphs of the natural logarithm using the Taylor series and the math.log function."""
+    def _plot_exp(self):
 
         x, y_taylor, y_math = self._table_manager.extract_columns(self._table, 'x', 'fx', 'math_f')
 
@@ -42,7 +41,6 @@ class Task3(ITask):
                                 f'{self._directory}exp_graphics.png')
 
     def _plot_n(self):
-        """Plots the dependence of the number of terms on x."""
 
         x, n = self._table_manager.extract_columns(self._table, 'x', 'n')
 
@@ -52,9 +50,8 @@ class Task3(ITask):
 
     @staticmethod
     def _input_values():
-        """Prompts the user to input x and eps with validation."""
 
-        x = float(input_with_validating(lambda i: abs(float(i)) < 40 ,'Enter the value of x: (-40, 40): '))
+        x = float(input_with_validating(lambda i: abs(float(i)) < 30 ,'Enter the value of x: (-30, 30): '))
         eps = float(input_with_validating(lambda i: 1 > float(i) > 0.00001, 'Enter the value of eps: (0.00001, 1): '))
         return x, eps
             

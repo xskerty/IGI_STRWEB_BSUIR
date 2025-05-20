@@ -17,5 +17,5 @@ def validate_any_input(value, validator: callable) -> bool:
 
 
 def ask_for_repeat() -> bool:
-    choice = input("Repeat? (y/otherwise): ").lower()
+    choice = input("Reload this task? (y/n): ").lower()
     return True if choice == 'y' else False

@@ -43,7 +43,7 @@ class RationalNumberRepository:
     
     @numbers.setter
     def numbers(self, numbers: dict[str, list[RationalNumber]]) -> None:
-        self._products = numbers.copy()
+        self._numbers = numbers.copy()
     
     def add_number(self, key: str, number: RationalNumber):
         self._numbers[key] = number
