@@ -1,6 +1,7 @@
 *.sln
 x64/
 .vs/
+env/
 *.filters
 *.user
 *.bin
