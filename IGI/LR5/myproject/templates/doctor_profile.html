@@ -1,0 +1,239 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Профиль врача{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <!-- Информация о враче -->
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <div class="card-body text-center">
+                    {% if doctor.photo %}
+                        <img src="{{ doctor.photo.url }}" alt="{{ doctor.user.get_full_name }}" class="rounded-circle img-fluid mb-3" style="width: 150px; height: 150px; object-fit: cover;">
+                    {% else %}
+                        <img src="{% static 'images/default_doctor.png' %}" alt="Default" class="rounded-circle img-fluid mb-3" style="width: 150px; height: 150px; object-fit: cover;">
+                    {% endif %}
+                    <h4 class="mb-2">{{ doctor.user.get_full_name }}</h4>
+                    <p class="text-muted mb-3">
+                        {% for specialization in doctor.specializations.all %}
+                            {{ specialization.name }}{% if not forloop.last %}, {% endif %}
+                        {% endfor %}
+                    </p>
+                    <div class="d-flex justify-content-center mb-3">
+                        <a href="{% url 'profile_edit' %}" class="btn btn-primary">
+                            <i class="bi bi-pencil"></i> Редактировать профиль
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Контактная информация</h5>
+                    <p class="mb-1"><i class="bi bi-envelope"></i> {{ doctor.email }}</p>
+                    <p class="mb-1"><i class="bi bi-telephone"></i> {{ doctor.phone }}</p>
+                    <p class="mb-1"><i class="bi bi-calendar"></i> Опыт работы: {{ doctor.experience_years }} лет</p>
+                    <p class="mb-0"><i class="bi bi-mortarboard"></i> {{ doctor.education }}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Услуги врача -->
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h4 class="card-title mb-0">Мои услуги</h4>
+                        <button class="btn btn-primary" onclick="showAddServiceForm()">
+                            <i class="bi bi-plus-circle"></i> Добавить услугу
+                        </button>
+                    </div>
+
+                    <!-- Форма добавления услуги -->
+                    <div id="addServiceForm" class="mb-4" style="display: none;">
+                        <form method="post" action="{% url 'add_service' %}" class="card">
+                            <div class="card-body">
+                                <h5 class="card-title mb-3">Добавить новую услугу</h5>
+                                {% csrf_token %}
+                                <div class="mb-3">
+                                    <label for="name" class="form-label">Название услуги</label>
+                                    <input type="text" class="form-control" id="name" name="name" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="price" class="form-label">Стоимость</label>
+                                    <input type="number" class="form-control" id="price" name="price" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="duration_minutes" class="form-label">Длительность (минуты)</label>
+                                    <input type="number" class="form-control" id="duration_minutes" name="duration_minutes" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="description" class="form-label">Описание</label>
+                                    <textarea class="form-control" id="description" name="description" rows="3"></textarea>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <button type="button" class="btn btn-secondary me-2" onclick="hideAddServiceForm()">Отмена</button>
+                                    <button type="submit" class="btn btn-primary">Добавить</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Список услуг -->
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Название</th>
+                                    <th>Стоимость</th>
+                                    <th>Длительность</th>
+                                    <th>Действия</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for service in services %}
+                                <tr>
+                                    <td>{{ service.name }}</td>
+                                    <td>{{ service.price }} ₽</td>
+                                    <td>{{ service.duration_minutes }} мин.</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-primary me-1" onclick="showEditServiceForm({{ service.id }})">
+                                            Редактировать
+                                        </button>
+                                        <button class="btn btn-sm btn-danger" onclick="showDeleteServiceForm({{ service.id }})">
+                                            Удалить
+                                        </button>
+                                    </td>
+                                </tr>
+                                <!-- Форма редактирования услуги -->
+                                <tr id="editServiceForm{{ service.id }}" style="display: none;">
+                                    <td colspan="4">
+                                        <form method="post" action="{% url 'edit_service' service.id %}" class="card">
+                                            <div class="card-body">
+                                                <h5 class="card-title mb-3">Редактировать услугу</h5>
+                                                {% csrf_token %}
+                                                <div class="mb-3">
+                                                    <label for="edit_name{{ service.id }}" class="form-label">Название услуги</label>
+                                                    <input type="text" class="form-control" id="edit_name{{ service.id }}" name="name" value="{{ service.name }}" required>
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label for="edit_price{{ service.id }}" class="form-label">Стоимость</label>
+                                                    <input type="number" class="form-control" id="edit_price{{ service.id }}" name="price" value="{{ service.price }}" required>
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label for="edit_duration{{ service.id }}" class="form-label">Длительность (минуты)</label>
+                                                    <input type="number" class="form-control" id="edit_duration{{ service.id }}" name="duration_minutes" value="{{ service.duration_minutes }}" required>
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label for="edit_description{{ service.id }}" class="form-label">Описание</label>
+                                                    <textarea class="form-control" id="edit_description{{ service.id }}" name="description" rows="3">{{ service.description }}</textarea>
+                                                </div>
+                                                <div class="d-flex justify-content-end">
+                                                    <button type="button" class="btn btn-secondary me-2" onclick="hideEditServiceForm({{ service.id }})">Отмена</button>
+                                                    <button type="submit" class="btn btn-primary">Сохранить</button>
+                                                </div>
+                                            </div>
+                                        </form>
+                                    </td>
+                                </tr>
+                                <!-- Форма удаления услуги -->
+                                <tr id="deleteServiceForm{{ service.id }}" style="display: none;">
+                                    <td colspan="4">
+                                        <div class="card">
+                                            <div class="card-body">
+                                                <h5 class="card-title mb-3">Удалить услугу</h5>
+                                                <p class="mb-3">Вы уверены, что хотите удалить услугу "{{ service.name }}"?</p>
+                                                <form method="post" action="{% url 'delete_service' service.id %}">
+                                                    {% csrf_token %}
+                                                    <div class="d-flex justify-content-end">
+                                                        <button type="button" class="btn btn-secondary me-2" onclick="hideDeleteServiceForm({{ service.id }})">Отмена</button>
+                                                        <button type="submit" class="btn btn-danger">Удалить</button>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="4" class="text-center">У вас пока нет добавленных услуг</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function showAddServiceForm() {
+    document.getElementById('addServiceForm').style.display = 'block';
+}
+
+function hideAddServiceForm() {
+    document.getElementById('addServiceForm').style.display = 'none';
+}
+
+function showEditServiceForm(serviceId) {
+    document.getElementById('editServiceForm' + serviceId).style.display = 'table-row';
+}
+
+function hideEditServiceForm(serviceId) {
+    document.getElementById('editServiceForm' + serviceId).style.display = 'none';
+}
+
+function showDeleteServiceForm(serviceId) {
+    document.getElementById('deleteServiceForm' + serviceId).style.display = 'table-row';
+}
+
+function hideDeleteServiceForm(serviceId) {
+    document.getElementById('deleteServiceForm' + serviceId).style.display = 'none';
+}
+</script>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .card {
+        transition: transform 0.2s;
+    }
+    .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    .btn-sm {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.875rem;
+    }
+    .btn-group {
+        gap: 0.5rem;
+    }
+    .doctor-photo {
+        width: 200px;
+        height: 200px;
+        object-fit: cover;
+        border: 3px solid #fff;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .doctor-photo-placeholder {
+        width: 200px;
+        height: 200px;
+        margin: 0 auto;
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Инициализация всплывающих подсказок
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl)
+    })
+</script>
+{% endblock %} 

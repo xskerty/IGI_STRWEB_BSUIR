@@ -1,0 +1,171 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Часто задаваемые вопросы{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1 class="text-center mb-4">Часто задаваемые вопросы</h1>
+
+    {% if user.is_superuser %}
+    <div class="mb-4">
+        <a href="{% url 'faq_create' %}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Добавить вопрос
+        </a>
+    </div>
+    {% endif %}
+
+    <div class="row">
+        <div class="col-md-8">
+            {% if user.is_authenticated and not user.is_superuser %}
+                <a href="{% url 'faq_create' %}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Задать вопрос
+                </a>
+            {% endif %}
+
+            {% if faqs %}
+                {% for faq in faqs %}
+                    <div class="card mb-4">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <div>
+                                {% if user.is_authenticated %}
+                                    {% if user.is_superuser %}
+                                        {% if faq.answer %}
+                                            <form method="post" action="{% url 'faq_delete_answer' faq.pk %}" class="d-inline">
+                                                {% csrf_token %}
+                                                <button type="submit" class="btn btn-sm btn-outline-warning">
+                                                    <i class="fas fa-trash"></i> Удалить ответ
+                                                </button>
+                                            </form>
+                                        {% endif %}
+                                        <a href="{% url 'faq_update' faq.pk %}" class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-edit"></i> Редактировать
+                                        </a>
+                                        <a href="{% url 'faq_delete' faq.pk %}" class="btn btn-sm btn-outline-danger">
+                                            <i class="fas fa-trash"></i> Удалить
+                                        </a>
+                                    {% elif faq.author == user %}
+                                        <a href="{% url 'faq_delete' faq.pk %}" class="btn btn-sm btn-outline-danger">
+                                            <i class="fas fa-trash"></i> Удалить
+                                        </a>
+                                    {% endif %}
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <h5 class="card-title">{{ faq.question }}</h5>
+                            <div class="faq-meta mb-3">
+                                <small class="text-muted">
+                                    <i class="fas fa-user"></i> {{ faq.author.get_full_name|default:faq.author.username|default:'Аноним' }}
+                                    <span class="mx-2">|</span>
+                                    <i class="fas fa-calendar"></i> {{ faq.created_at|date:"d.m.Y H:i" }} (UTC{{ faq.created_at|date:"O" }})
+                                </small>
+                            </div>
+                            {% if faq.answer %}
+                                <div class="faq-answer">
+                                    <p class="card-text">{{ faq.answer }}</p>
+                                    <div class="faq-meta">
+                                        <small class="text-muted">
+                                            {% if faq.answer_author %}
+                                                <i class="fas fa-user-md"></i> {{ faq.answer_author.get_full_name|default:faq.answer_author.username }}
+                                            {% else %}
+                                                <i class="fas fa-user-md"></i> Аноним
+                                            {% endif %}
+                                            <span class="mx-2">|</span>
+                                            <i class="fas fa-clock"></i> {{ faq.updated_at|date:"d.m.Y H:i" }} (UTC{{ faq.updated_at|date:"O" }})
+                                        </small>
+                                    </div>
+                                </div>
+                            {% else %}
+                                <p class="text-muted">Ответа пока нет.</p>
+                                {% if user.is_authenticated %}
+                                    <a href="{% url 'faq_answer' faq.pk %}" class="btn btn-sm btn-outline-success">
+                                        <i class="fas fa-reply"></i> Ответить
+                                    </a>
+                                {% endif %}
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endfor %}
+
+                {% if is_paginated %}
+                    <nav aria-label="Page navigation">
+                        <ul class="pagination justify-content-center">
+                            {% if page_obj.has_previous %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}">
+                                        <i class="fas fa-chevron-left"></i> Предыдущая
+                                    </a>
+                                </li>
+                            {% endif %}
+
+                            {% for num in page_obj.paginator.page_range %}
+                                <li class="page-item {% if page_obj.number == num %}active{% endif %}">
+                                    <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                                </li>
+                            {% endfor %}
+
+                            {% if page_obj.has_next %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ page_obj.next_page_number }}">
+                                        Следующая <i class="fas fa-chevron-right"></i>
+                                    </a>
+                                </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                {% endif %}
+            {% else %}
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i> Вопросов пока нет.
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+.faq-card {
+    transition: transform 0.2s;
+    border: none;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.faq-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+.faq-meta {
+    color: #6c757d;
+    font-size: 0.875rem;
+}
+
+.faq-answer {
+    background-color: #f8f9fa;
+    padding: 1rem;
+    border-radius: 0.25rem;
+    margin-top: 1rem;
+}
+
+.badge {
+    font-weight: 500;
+    padding: 0.5em 0.75em;
+}
+
+.search-box {
+    background-color: #f8f9fa;
+    padding: 1rem;
+    border-radius: 0.25rem;
+}
+
+.pagination .page-link {
+    color: #0d6efd;
+}
+
+.pagination .page-item.active .page-link {
+    background-color: #0d6efd;
+    border-color: #0d6efd;
+}
+</style>
+{% endblock %} 

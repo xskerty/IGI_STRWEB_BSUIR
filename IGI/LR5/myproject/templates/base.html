@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Медицинский центр{% endblock %}</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f4f4f4;
+        }
+
+        .header {
+            background-color: #2c3e50;
+            color: white;
+            padding: 1rem 0;
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: white;
+            text-decoration: none;
+        }
+
+        .nav-menu {
+            display: flex;
+            gap: 10px;
+            list-style: none;
+        }
+
+        .nav-link {
+            color: white;
+            text-decoration: none;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 14px;
+            transition: background-color 0.3s;
+        }
+
+        .nav-link:hover {
+            background-color: #34495e;
+        }
+
+        .logout-form {
+            display: inline;
+        }
+
+        .logout-button {
+            background: none;
+            border: none;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background-color 0.3s;
+        }
+
+        .logout-button:hover {
+            background-color: #34495e;
+        }
+
+        .main-content {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 0 20px;
+        }
+
+        .alert {
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+        }
+
+        .alert-success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert-error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .btn-primary {
+            background-color: #3498db;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #2980b9;
+        }
+
+        .btn-danger {
+            background-color: #e74c3c;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background-color: #c0392b;
+        }
+
+        .card {
+            background: white;
+            border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .mt-3 {
+            margin-top: 1rem;
+        }
+
+        .mb-3 {
+            margin-bottom: 1rem;
+        }
+
+        @media (max-width: 768px) {
+            .nav-container {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .nav-menu {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <header class="header">
+        <nav class="nav-container">
+            <a href="{% url 'home' %}" class="logo">Медицинский центр</a>
+            <ul class="nav-menu">
+                <li><a href="{% url 'home' %}" class="nav-link">Главная</a></li>
+                <li><a href="{% url 'services' %}" class="nav-link">Наши услуги</a></li>
+                <li><a href="{% url 'doctors' %}" class="nav-link">Наши специалисты</a></li>
+                <li><a href="{% url 'reviews' %}" class="nav-link">Отзывы пациентов</a></li>
+                <li><a href="{% url 'news' %}" class="nav-link">Новости</a></li>
+                <li><a href="{% url 'about' %}" class="nav-link">О компании</a></li>
+                <li><a href="{% url 'faq' %}" class="nav-link">Часто задаваемые вопросы</a></li>
+                <li><a href="{% url 'vacancies' %}" class="nav-link">Вакансии</a></li>
+                <li><a href="{% url 'promocodes' %}" class="nav-link">Промокоды</a></li>
+                <li><a href="{% url 'privacy_policy' %}" class="nav-link">Политика конфиденциальности</a></li>
+                {% if user.is_authenticated %}
+                    <li><a href="{% url 'profile' %}" class="nav-link">Профиль</a></li>
+                    <li><a href="{% url 'appointments' %}" class="nav-link">Записи</a></li>
+                    <li>
+                        <form method="post" action="{% url 'logout' %}" class="logout-form">
+                            {% csrf_token %}
+                            <button type="submit" class="logout-button">Выйти</button>
+                        </form>
+                    </li>
+                {% else %}
+                    <li><a href="{% url 'login' %}" class="nav-link">Войти</a></li>
+                    <li><a href="{% url 'register' %}" class="nav-link">Регистрация</a></li>
+                {% endif %}
+                {% if user.is_superuser%}
+                    <li><a href="{% url 'statistics' %}" class="nav-link">Статистика</a></li>
+                {% endif %}
+            </ul>
+        </nav>
+    </header>
+
+    <main class="main-content">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert {% if message.tags == 'error' %}alert-error{% else %}alert-success{% endif %}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        {% block content %}{% endblock %}
+    </main>
+
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

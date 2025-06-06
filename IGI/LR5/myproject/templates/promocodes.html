@@ -1,0 +1,107 @@
+<script type="text/javascript">
+        var gk_isXlsx = false;
+        var gk_xlsxFileLookup = {};
+        var gk_fileData = {};
+        function filledCell(cell) {
+          return cell !== '' && cell != null;
+        }
+        function loadFileData(filename) {
+        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+            try {
+                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+                var firstSheetName = workbook.SheetNames[0];
+                var worksheet = workbook.Sheets[firstSheetName];
+
+                // Convert sheet to JSON to filter blank rows
+                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+                // Filter out blank rows (rows where all cells are empty, null, or undefined)
+                var filteredData = jsonData.filter(row => row.some(filledCell));
+
+                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
+                var headerRowIndex = filteredData.findIndex((row, index) =>
+                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+                );
+                // Fallback
+                if (headerRowIndex === -1 || headerRowIndex > 25) {
+                  headerRowIndex = 0;
+                }
+
+                // Convert filtered JSON back to CSV
+                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
+                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+                return csv;
+            } catch (e) {
+                console.error(e);
+                return "";
+            }
+        }
+        return gk_fileData[filename] || "";
+        }
+        </script>
+{% extends 'base.html' %}
+
+{% block title %}Промокоды{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1 class="text-center mb-4">Промокоды</h1>
+
+    {% if user.is_superuser %}
+    <div class="mb-4">
+        <a href="{% url 'promocode_create' %}" class="btn btn-primary">Добавить промокод</a>
+    </div>
+    {% endif %}
+
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            {% if promocodes %}
+                {% for promocode in promocodes %}
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ promocode.code }}</h5>
+                        <p class="card-text">
+                            Скидка: {{ promocode.discount }}%<br>
+                            Статус: {% if promocode.is_active %}Активен{% else %}Неактивен{% endif %}
+                        </p>
+                        {% if user.is_superuser %}
+                        <div class="d-flex justify-content-end">
+                            <a href="{% url 'promocode_update' promocode.pk %}" class="btn btn-sm btn-outline-primary me-2">Редактировать</a>
+                            <a href="{% url 'promocode_delete' promocode.pk %}" class="btn btn-sm btn-outline-danger">Удалить</a>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+
+                {% if is_paginated %}
+                <nav aria-label="Page navigation">
+                    <ul class="pagination justify-content-center">
+                        {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Предыдущая</a>
+                        </li>
+                        {% endif %}
+
+                        {% for num in page_obj.paginator.page_range %}
+                        <li class="page-item {% if page_obj.number == num %}active{% endif %}">
+                            <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                        </li>
+                        {% endfor %}
+
+                        {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.next_page_number }}">Следующая</a>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+                {% endif %}
+            {% else %}
+                <div class="alert alert-info">
+                    Активных промокодов пока нет.
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

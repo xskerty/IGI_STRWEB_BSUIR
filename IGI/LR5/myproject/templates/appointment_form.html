@@ -1,0 +1,96 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Запись на прием{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="mb-0">Запись на прием</h4>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label for="doctor" class="form-label">Выберите врача</label>
+                            <select class="form-select" id="doctor" name="doctor" required>
+                                <option value="">Выберите врача</option>
+                                {% for doctor in doctors %}
+                                <option value="{{ doctor.id }}">{{ doctor.user.last_name }} {{ doctor.user.first_name }} {{ doctor.user.profile.middle_name }} - {{ doctor.specializations.all|join:", " }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="service" class="form-label">Выберите услугу</label>
+                            <select class="form-select" id="service" name="service" required>
+                                <option value="">Сначала выберите врача</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="appointment_date" class="form-label">Дата и время приема</label>
+                            <input type="datetime-local" class="form-control" id="appointment_date" name="appointment_date" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="notes" class="form-label">Примечания</label>
+                            <textarea class="form-control" id="notes" name="notes" rows="3" placeholder="Укажите дополнительную информацию, если необходимо"></textarea>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary">Записаться на прием</button>
+                            <a href="{% url 'appointments' %}" class="btn btn-secondary">Отмена</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const doctorSelect = document.getElementById('doctor');
+    const serviceSelect = document.getElementById('service');
+    const appointmentDate = document.getElementById('appointment_date');
+
+    // Устанавливаем минимальную дату на сегодня
+    const today = new Date();
+    today.setMinutes(today.getMinutes() - today.getTimezoneOffset());
+    appointmentDate.min = today.toISOString().slice(0, 16);
+
+    // Загружаем услуги при выборе врача
+    doctorSelect.addEventListener('change', function() {
+        const doctorId = this.value;
+        serviceSelect.innerHTML = '<option value="">Загрузка услуг...</option>';
+        
+        if (doctorId) {
+            fetch(`/api/doctor-services/${doctorId}/`)
+                .then(response => response.json())
+                .then(data => {
+                    serviceSelect.innerHTML = '<option value="">Выберите услугу</option>';
+                    data.forEach(service => {
+                        const option = document.createElement('option');
+                        option.value = service.id;
+                        option.textContent = `${service.name} - ${service.price} руб. (${service.duration_minutes} мин.)`;
+                        serviceSelect.appendChild(option);
+                    });
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    serviceSelect.innerHTML = '<option value="">Ошибка загрузки услуг</option>';
+                });
+        } else {
+            serviceSelect.innerHTML = '<option value="">Сначала выберите врача</option>';
+        }
+    });
+});
+</script>
+{% endblock %} 

@@ -1,0 +1,106 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ doctor.user.last_name }} {{ doctor.user.first_name }} {{ doctor.user.profile.middle_name }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card">
+                {% if doctor.photo %}
+                <img src="{{ doctor.photo.url }}" class="card-img-top" alt="{{ doctor.user.last_name }} {{ doctor.user.first_name }} {{ doctor.user.profile.middle_name }}" style="height: 300px; object-fit: cover;">
+                {% else %}
+                <img src="{% static 'images/default_doctor.jpg' %}" class="card-img-top" alt="Фото отсутствует" style="height: 300px; object-fit: cover;">
+                {% endif %}
+                <div class="card-body">
+                    <h5 class="card-title">{{ doctor.user.last_name }} {{ doctor.user.first_name }} {{ doctor.user.profile.middle_name }}</h5>
+                    <p class="card-text">
+                        <strong>Дата рождения:</strong> {{ doctor.date_of_birth|date:"d.m.Y" }}<br>
+                        <strong>Email:</strong> {{ doctor.user.email }}<br>
+                        <strong>Телефон:</strong> {{ doctor.phone }}<br>
+                        <strong>Опыт работы:</strong> {{ doctor.experience_years }} лет<br>
+                        <strong>Специализации:</strong><br>
+                        {% for spec in doctor.specializations.all %}
+                        <span class="badge bg-primary me-1">{{ spec.name }}</span>
+                        {% endfor %}
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-8">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5>Образование</h5>
+                </div>
+                <div class="card-body">
+                    <p class="card-text">{{ doctor.education|linebreaks }}</p>
+                </div>
+            </div>
+
+            {% if user.is_authenticated and user.patient_profile %}
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5>Записаться на прием</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" action="{% url 'create_appointment' %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="doctor" value="{{ doctor.id }}">
+                        <div class="mb-3">
+                            <label for="service" class="form-label">Услуга</label>
+                            <select name="service" id="service" class="form-select" required>
+                                <option value="">Выберите услугу</option>
+                                {% for service in doctor.services.all %}
+                                <option value="{{ service.id }}">{{ service.name }} - {{ service.price }} руб.</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="appointment_date" class="form-label">Дата и время</label>
+                            <input type="datetime-local" name="appointment_date" id="appointment_date" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="notes" class="form-label">Примечания</label>
+                            <textarea name="notes" id="notes" class="form-control" rows="3"></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Записаться</button>
+                    </form>
+                </div>
+            </div>
+            {% endif %}
+
+            <div class="card">
+                <div class="card-header">
+                    <h5>Отзывы</h5>
+                </div>
+                <div class="card-body">
+                    {% if reviews %}
+                    {% for review in reviews %}
+                    <div class="review mb-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h6>{{ review.patient.user.get_full_name }}</h6>
+                            <div class="rating">
+                                {% for i in "12345" %}
+                                {% if forloop.counter <= review.rating %}
+                                <span class="text-warning">★</span>
+                                {% else %}
+                                <span class="text-muted">☆</span>
+                                {% endif %}
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <p class="text-muted small">{{ review.created_at|date:"d.m.Y H:i" }}</p>
+                        <p>{{ review.comment }}</p>
+                    </div>
+                    {% if not forloop.last %}<hr>{% endif %}
+                    {% endfor %}
+                    {% else %}
+                    <p class="text-muted">Пока нет отзывов</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 
