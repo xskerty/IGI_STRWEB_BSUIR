@@ -1,0 +1,197 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Отзывы пациентов{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <!-- Заголовок и кнопка добавления отзыва -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <h1 class="mb-0">Отзывы пациентов</h1>
+                {% if user.is_authenticated and is_patient %}
+                    <a href="{% url 'review_create' %}" class="btn btn-primary btn-lg">
+                        <i class="bi bi-plus-circle me-2"></i> Написать отзыв
+                    </a>
+                {% elif user.is_authenticated and not is_patient %}
+                    <div class="alert alert-info mb-0">
+                        <i class="bi bi-info-circle me-2"></i>
+                        Только пациенты могут оставлять отзывы
+                    </div>
+                {% else %}
+                    <a href="{% url 'login' %}?next={{ request.path }}" class="btn btn-outline-primary btn-lg">
+                        <i class="bi bi-box-arrow-in-right me-2"></i> Войти для написания отзыва
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Список отзывов -->
+    <div class="row">
+        {% if reviews %}
+            {% for review in reviews %}
+                <div class="col-md-6 mb-4">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-body">
+                            <!-- Информация о враче -->
+                            <div class="d-flex justify-content-between align-items-start mb-3">
+                                <div>
+                                    <h5 class="card-title mb-1">{{ review.doctor.user.get_full_name }}</h5>
+                                    <h6 class="card-subtitle text-muted">
+                                        {{ review.doctor.specializations.all|join:", " }}
+                                    </h6>
+                                </div>
+                                <div class="text-warning">
+                                    {% for i in "12345" %}
+                                        {% if forloop.counter <= review.rating %}
+                                            <i class="bi bi-star-fill"></i>
+                                        {% else %}
+                                            <i class="bi bi-star"></i>
+                                        {% endif %}
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            
+                            <!-- Текст отзыва -->
+                            <p class="card-text">{{ review.text }}</p>
+                            
+                            <!-- Информация о пациенте и датах -->
+                            <div class="d-flex justify-content-between align-items-center mt-3">
+                                <div class="text-muted small">
+                                    <div>Пациент: {{ review.patient.user.get_full_name }}</div>
+                                    <div>Дата приема: {{ review.review_date|date:"d.m.Y" }}</div>
+                                </div>
+                                <div class="text-muted small">
+                                    Опубликовано: {{ review.created_at|date:"d.m.Y H:i" }} (UTC{{ review.created_at|date:"O" }})
+                                </div>
+                            </div>
+
+                            <!-- Кнопки редактирования и удаления -->
+                            {% if user.is_authenticated and user.is_superuser %}
+                                <div class="d-flex justify-content-end gap-2 mt-3">
+                                    <a href="{% url 'review_update' review.pk %}" class="btn btn-outline-primary btn-sm">
+                                        <i class="bi bi-pencil me-1"></i>Редактировать
+                                    </a>
+                                    <a href="{% url 'review_delete' review.pk %}" class="btn btn-outline-danger btn-sm">
+                                        <i class="bi bi-trash me-1"></i>Удалить
+                                    </a>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <div class="col-12">
+                <div class="alert alert-info">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span>Пока нет отзывов</span>
+                        {% if user.is_authenticated and is_patient %}
+                            <a href="{% url 'review_create' %}" class="btn btn-primary">
+                                <i class="bi bi-plus-circle me-2"></i> Написать первый отзыв
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Пагинация -->
+    {% if is_paginated %}
+        <div class="row mt-4">
+            <div class="col-12">
+                <nav aria-label="Page navigation">
+                    <ul class="pagination justify-content-center">
+                        {% if page_obj.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page=1" aria-label="First">
+                                    <span aria-hidden="true">&laquo;&laquo;</span>
+                                </a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.previous_page_number }}" aria-label="Previous">
+                                    <span aria-hidden="true">&laquo;</span>
+                                </a>
+                            </li>
+                        {% endif %}
+
+                        {% for num in page_obj.paginator.page_range %}
+                            {% if page_obj.number == num %}
+                                <li class="page-item active">
+                                    <span class="page-link">{{ num }}</span>
+                                </li>
+                            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                                </li>
+                            {% endif %}
+                        {% endfor %}
+
+                        {% if page_obj.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.next_page_number }}" aria-label="Next">
+                                    <span aria-hidden="true">&raquo;</span>
+                                </a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}" aria-label="Last">
+                                    <span aria-hidden="true">&raquo;&raquo;</span>
+                                </a>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .card {
+        transition: transform 0.2s;
+        border: none;
+        border-radius: 10px;
+    }
+    .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1) !important;
+    }
+    .bi-star-fill, .bi-star {
+        color: #ffc107;
+        font-size: 1.2rem;
+    }
+    .btn-primary {
+        padding: 0.5rem 1.5rem;
+        border-radius: 8px;
+        font-weight: 500;
+    }
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    .alert {
+        border-radius: 10px;
+        padding: 1.5rem;
+    }
+    .pagination .page-link {
+        border-radius: 5px;
+        margin: 0 2px;
+    }
+    .pagination .page-item.active .page-link {
+        background-color: #0d6efd;
+        border-color: #0d6efd;
+    }
+    .btn-sm {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.875rem;
+    }
+    .btn-outline-primary:hover, .btn-outline-danger:hover {
+        transform: translateY(-1px);
+    }
+</style>
+{% endblock %}
